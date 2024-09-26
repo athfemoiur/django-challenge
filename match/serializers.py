@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from match.models import Stadium, Match, Team, Seat
+from match.models import Stadium, Match, Team, Seat, SeatAssignment
 
 
 class StadiumSerializer(serializers.ModelSerializer):
@@ -38,3 +38,8 @@ class SeatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seat
         fields = ['row', 'number', 'stadium_id']
+
+class SeatAssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SeatAssignment
+        fields = '__all__'

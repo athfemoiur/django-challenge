@@ -49,7 +49,7 @@ class SeatAssignment(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='seat_assignments')
     seat = models.ForeignKey(Seat, on_delete=models.CASCADE)
     is_reserved = models.BooleanField(default=False)
-    reserver_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reserved_seats')
+    reserved_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reserved_seats')
 
     class Meta:
         constraints = [
