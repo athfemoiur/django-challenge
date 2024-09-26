@@ -14,7 +14,6 @@ class Team(models.Model):
 
 class Stadium(models.Model):
     name = models.CharField(unique=True, max_length=80)
-    capacity = models.PositiveIntegerField()
 
     def __str__(self):
         return self.name
