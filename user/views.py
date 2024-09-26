@@ -1,4 +1,6 @@
 from django.contrib.auth import authenticate
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -13,6 +15,23 @@ def _get_token_for_user(user) -> Token:
 
 
 class SignUpView(APIView):
+    @swagger_auto_schema(
+        request_body=SignupSerializer,
+        responses={
+            201: openapi.Response('Signup successful', openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'token': openapi.Schema(type=openapi.TYPE_STRING, description='Authentication token'),
+                }
+            )),
+            400: openapi.Response('Validation Error', openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING, description='Validation error message'),
+                }
+            )),
+        }
+    )
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -24,6 +43,23 @@ class SignUpView(APIView):
 
 
 class LoginView(APIView):
+    @swagger_auto_schema(
+        request_body=LoginSerializer,
+        responses={
+            200: openapi.Response('Login successful', openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'token': openapi.Schema(type=openapi.TYPE_STRING, description='Authentication token'),
+                }
+            )),
+            400: openapi.Response('Invalid credentials', openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING, description='Error message'),
+                }
+            )),
+        }
+    )
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
