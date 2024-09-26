@@ -26,6 +26,9 @@ class Match(models.Model):
     datetime = models.DateTimeField()
     stadium = models.ForeignKey(Stadium, on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name_plural = 'Matches'
+
     def __str__(self):
         return f'{self.home_team} vs {self.away_team}'
 
