@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from user.serializers import SignupSerializer, LoginSerializer
 
 
-def get_token_for_user(user) -> Token:
+def _get_token_for_user(user) -> Token:
     token, _ = Token.objects.get_or_create(user=user)
     return token
 
@@ -17,7 +17,7 @@ class SignUpView(APIView):
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        token = get_token_for_user(user)
+        token = _get_token_for_user(user)
         return Response({
             'token': token.key
         }, status=status.HTTP_201_CREATED)
@@ -35,7 +35,7 @@ class LoginView(APIView):
                 'error': 'Invalid credentials'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        token = get_token_for_user(user)
+        token = _get_token_for_user(user)
         return Response({
             'token': token.key
         }, status=status.HTTP_200_OK)
