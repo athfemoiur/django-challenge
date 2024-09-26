@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.core.exceptions import ValidationError
+from django.db import models, transaction
 from django.db.models import UniqueConstraint
 
 User = get_user_model()
@@ -43,13 +44,15 @@ class Seat(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.number}-{self.number}'
+        return f'{self.row}-{self.number}'
+
 
 class SeatAssignment(models.Model):
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='seat_assignments')
     seat = models.ForeignKey(Seat, on_delete=models.CASCADE)
     is_reserved = models.BooleanField(default=False)
-    reserved_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reserved_seats')
+    reserved_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE,
+                                    related_name='reserved_seats')
 
     class Meta:
         constraints = [
@@ -58,3 +61,22 @@ class SeatAssignment(models.Model):
 
     def __str__(self):
         return f'{self.match}-{self.seat}'
+
+    def clean(self):
+        if self.seat.stadium != self.match.stadium:
+            raise ValidationError("The seat's stadium does not match the match's stadium.")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def reserve(cls, seat_assignment_id: int, user: User) -> bool:
+        with transaction.atomic(): # for handling race-conditions on the db level
+            seat_assignment = SeatAssignment.objects.select_for_update().get(id=seat_assignment_id)
+            if seat_assignment.is_reserved:
+                return False
+            seat_assignment.is_reserved = True
+            seat_assignment.reserved_by = user
+            seat_assignment.save(update_fields=['is_reserved', 'reserved_by'])
+            return True

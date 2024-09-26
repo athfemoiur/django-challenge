@@ -35,11 +35,24 @@ class MatchSerializer(serializers.ModelSerializer):
 class SeatSerializer(serializers.ModelSerializer):
     stadium_id = serializers.PrimaryKeyRelatedField(queryset=Stadium.objects.all(),
                                                     source='stadium')
+
     class Meta:
         model = Seat
-        fields = ['row', 'number', 'stadium_id']
+        fields = ['id', 'row', 'number', 'stadium_id']
+
 
 class SeatAssignmentSerializer(serializers.ModelSerializer):
+    match_id = serializers.PrimaryKeyRelatedField(queryset=Match.objects.all(),
+                                                  source='match')
+    seat_id = serializers.PrimaryKeyRelatedField(queryset=Seat.objects.all(),
+                                                 source='seat')
+    seat = SeatSerializer(read_only=True)
+
     class Meta:
         model = SeatAssignment
-        fields = '__all__'
+        fields = ['match_id', 'seat_id', 'seat', 'is_reserved', 'reserved_by']
+
+    def validate(self, data):
+        if data['seat'].stadium != data['match'].stadium:
+            raise serializers.ValidationError("The seat's stadium does not match the match's stadium.")
+        return data
