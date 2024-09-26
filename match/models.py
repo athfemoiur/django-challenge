@@ -34,15 +34,28 @@ class Match(models.Model):
 
 
 class Seat(models.Model):
-    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='seats')
+    stadium = models.ForeignKey(Stadium, on_delete=models.CASCADE, related_name='seats')
+    row = models.PositiveIntegerField()
     number = models.PositiveIntegerField()
-    is_reserved = models.BooleanField(default=False)
-    reserver_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields=['match', 'number'], name='unique_match_number')
+            UniqueConstraint(fields=['stadium', 'row', 'number'], name='unique_stadium_row_number')
         ]
 
     def __str__(self):
-        return f'{self.match}: NO.{self.number} reserved: {self.is_reserved}'
+        return f'{self.number}-{self.number}'
+
+class SeatAssignment(models.Model):
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name='seat_assignments')
+    seat = models.ForeignKey(Seat, on_delete=models.CASCADE)
+    is_reserved = models.BooleanField(default=False)
+    reserver_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reserved_seats')
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['match', 'seat'], name='unique_match_seat')
+        ]
+
+    def __str__(self):
+        return f'{self.match}-{self.seat}'
