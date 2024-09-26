@@ -74,7 +74,7 @@ class MatchSeatsView(APIView):
     )
     def get(self, request, match_id: int):
         match = get_object_or_404(Match, pk=match_id)
-        seats = SeatAssignment.objects.filter(match=match)
+        seats = SeatAssignment.objects.filter(match=match).select_related('seat')
         serializer = SeatAssignmentSerializer(seats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
